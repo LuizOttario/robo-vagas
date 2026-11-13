@@ -59,7 +59,7 @@ def cmd_coletar(args, config: Config) -> int:
         for nome in fontes:
             log.info("Buscando no %s: %s", nome, ", ".join(termos))
             try:
-                coletor = coletores.criar(nome, config.mostrar_navegador)
+                coletor = coletores.criar(nome, config.mostrar_navegador, config.cidades, config.estado)
             except ValueError as erro:
                 erros.append(str(erro))
                 log.error(erro)

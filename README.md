@@ -8,12 +8,13 @@ Sistema em Python que procura vagas de emprego sozinho em vários sites, dá uma
 
 ## Funcionalidades
 
-- **Coleta em 3 sites, cada um com uma técnica diferente**
+- **Coleta em 4 sites, com técnicas diferentes**
   | Site | Técnica |
   |---|---|
   | Gupy | API JSON com `requests` |
   | Vagas.com | Navegador automatizado com Selenium (RPA): clica em "mostrar mais vagas" e lê os cartões |
   | ProgramaThor | Leitura do HTML com BeautifulSoup |
+  | Sólides Vagas | API JSON com `requests`, filtrando pelas suas cidades e pegando as vagas remotas |
 - **Nota de 0 a 100** pra cada vaga, baseada nas suas habilidades, no nível (estágio, júnior...) e no local. Cada nota mostra os motivos, ex.: `+45 habilidades: python, sql, automação`
 - **Banco de dados SQLite**: não repete vagas e guarda o histórico de cada execução
 - **Painel web (Streamlit)** com filtros, gráficos, detalhes da vaga e controle de candidaturas (nova, interessante, candidatei, entrevista, descartada)
@@ -94,6 +95,7 @@ vagas/
     gupy.py           API do Gupy
     vagas_com.py      Selenium no Vagas.com
     programathor.py   BeautifulSoup no ProgramaThor
+    solides.py        API da Sólides Vagas
   modelos.py          classe Vaga e detecção de nível e modalidade
   pontuacao.py        cálculo da nota
   banco.py            banco de dados SQLite

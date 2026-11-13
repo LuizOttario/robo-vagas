@@ -57,7 +57,7 @@ def salvar_mudancas(originais: pd.DataFrame, editadas: pd.DataFrame) -> int:
 # ------------------------------------------------------------------- cabeçalho
 
 st.title("Robô de Vagas")
-st.caption("Vagas coletadas automaticamente do Gupy, Vagas.com e ProgramaThor, com nota de acordo com o seu perfil.")
+st.caption("Vagas coletadas automaticamente do Gupy, Vagas.com, ProgramaThor e Sólides, com nota de acordo com o seu perfil.")
 
 df = carregar_vagas()
 

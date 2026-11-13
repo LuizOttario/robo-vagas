@@ -60,3 +60,68 @@ def test_gupy_remoto_sem_cidade():
 def test_slug_da_url_do_vagas_com():
     assert slug("Automação Python") == "automacao-python"
     assert slug("  C# / .NET ") == "c-net"
+
+
+ITEM_SOLIDES = {
+    "id": 952820, "title": "Analista de Suporte Júnior", "companyName": "Empresa Exemplo",
+    "description": "<p>Suporte <b>N1 e N2</b> com Active Directory.</p>",
+    "city": {"name": "Belo Horizonte"}, "state": {"code": "MG"},
+    "jobType": "hibrido", "homeOffice": False,
+    "seniority": [{"name": "Júnior"}],
+    "salary": {"showRangeToApplicant": True, "initialRange": 3000, "finalRange": 4300.5},
+    "hardSkills": [{"name": " Active Directory "}, {"name": "Windows"}],
+    "createdAt": "2026-11-13", "isHiddenJob": False, "isDisabled": False,
+}
+
+
+def test_solides_converte_item_da_api():
+    from vagas.coletores.solides import converter
+    v = converter(ITEM_SOLIDES)
+    assert v.id == "solides:952820"
+    assert v.url == "https://vagas.solides.com.br/vaga/952820"
+    assert v.local == "Belo Horizonte, MG"
+    assert v.modalidade == "hibrido"
+    assert v.nivel == "junior"
+    assert v.salario == "R$ 3.000,00 a R$ 4.300,50"
+    assert v.tags == ["Active Directory", "Windows"]
+    assert v.descricao == "Suporte N1 e N2 com Active Directory."
+    assert v.publicada_em.day == 13
+
+
+def test_solides_home_office_sem_cidade_vira_remoto():
+    from vagas.coletores.solides import converter
+    v = converter({"id": 1, "title": "Dev Python Pleno", "jobType": "presencial", "homeOffice": True,
+                   "salary": {"showRangeToApplicant": False, "finalRange": 9000}})
+    assert v.modalidade == "remoto"
+    assert v.local == "Remoto"
+    assert v.nivel == "pleno"      # veio do título
+    assert v.salario == ""         # empresa escondeu a faixa
+
+
+def test_solides_monta_filtro_de_cidade_com_uf():
+    from vagas.coletores.solides import ColetorSolides
+    assert ColetorSolides(["Contagem", "Betim"], "MG").locais == ["Contagem - MG", "Betim - MG"]
+    assert ColetorSolides(["Contagem"], "").locais == []   # sem UF não filtra por cidade
+
+
+def test_solides_busca_cidades_e_so_remotas_na_busca_geral(monkeypatch):
+    from vagas.coletores import solides
+
+    remota = dict(ITEM_SOLIDES, id=2, jobType="remoto", city=None, state=None)
+    presencial_longe = dict(ITEM_SOLIDES, id=3, jobType="presencial", city={"name": "Manaus"})
+    pedidos = []
+
+    class Resposta:
+        def __init__(self, dados): self.dados = dados
+        def json(self): return self.dados
+
+    def falso_get(self, url, params=None):
+        pedidos.append(params["locations"])
+        if params["locations"]:
+            return Resposta({"totalPages": 1, "data": [ITEM_SOLIDES]})
+        return Resposta({"totalPages": 1, "data": [remota, presencial_longe]})
+
+    monkeypatch.setattr(solides.ColetorSolides, "get", falso_get)
+    vagas = solides.ColetorSolides(["Belo Horizonte"], "MG").coletar_termo("suporte", 10)
+    assert pedidos == ["Belo Horizonte - MG", ""]
+    assert sorted(v.id_externo for v in vagas) == ["2", "952820"]

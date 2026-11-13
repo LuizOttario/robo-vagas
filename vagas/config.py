@@ -15,7 +15,7 @@ ARQUIVO_EXEMPLO = PASTA_PROJETO / "config.exemplo.toml"
 class Config:
     # [busca]
     termos: list[str] = field(default_factory=lambda: ["python"])
-    fontes: list[str] = field(default_factory=lambda: ["gupy", "vagas_com", "programathor"])
+    fontes: list[str] = field(default_factory=lambda: ["gupy", "vagas_com", "programathor", "solides"])
     max_por_termo: int = 50
     mostrar_navegador: bool = False
 
@@ -26,6 +26,7 @@ class Config:
     aceita_remoto: bool = True
     aceita_hibrido: bool = True
     cidades: list[str] = field(default_factory=list)
+    estado: str = ""  # UF das cidades, ex.: "MG" (a Sólides precisa disso pra filtrar)
     palavras_evitar: list[str] = field(default_factory=list)
 
     # [alertas]
@@ -69,6 +70,7 @@ def carregar(caminho: Path | None = None) -> Config:
         aceita_remoto=perfil.get("aceita_remoto", padrao.aceita_remoto),
         aceita_hibrido=perfil.get("aceita_hibrido", padrao.aceita_hibrido),
         cidades=perfil.get("cidades", padrao.cidades),
+        estado=perfil.get("estado", padrao.estado),
         palavras_evitar=perfil.get("palavras_evitar", padrao.palavras_evitar),
         nota_minima_alerta=alertas.get("nota_minima", padrao.nota_minima_alerta),
         email=dados.get("email", {}),

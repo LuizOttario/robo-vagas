@@ -6,8 +6,8 @@
 # Palavras que o robô pesquisa em cada site
 termos = ["python", "rpa", "automação"]
 
-# Sites usados: gupy, vagas_com, programathor
-fontes = ["gupy", "vagas_com", "programathor"]
+# Sites usados: gupy, vagas_com, programathor, solides
+fontes = ["gupy", "vagas_com", "programathor", "solides"]
 
 # Máximo de vagas por termo em cada site
 max_por_termo = 50
@@ -28,6 +28,10 @@ aceita_hibrido = true
 
 # Cidades onde você aceita trabalhar presencial ou híbrido
 cidades = ["São Paulo"]
+
+# Sigla do estado das cidades acima. A Sólides usa pra filtrar por cidade;
+# sem ela, só as vagas remotas da Sólides entram.
+estado = "SP"
 
 # Vagas com estas palavras perdem pontos
 palavras_evitar = ["10 anos de experiência", "inglês fluente", "enfermeiro", "enfermagem"]
