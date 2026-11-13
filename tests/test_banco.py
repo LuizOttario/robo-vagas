@@ -46,3 +46,8 @@ def test_execucoes(config):
         banco.finalizar_execucao(id_exec, 10, 3, ["gupy: erro"])
         linha = banco.execucoes().iloc[0]
         assert (linha["encontradas"], linha["novas"], linha["erros"]) == (10, 3, "gupy: erro")
+
+
+def test_mudar_status_de_vaga_que_nao_existe(tmp_path):
+    with Banco(tmp_path / "v.db") as banco:
+        assert banco.mudar_status("gupy:000", "candidatei") is False

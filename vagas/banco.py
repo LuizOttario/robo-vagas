@@ -119,11 +119,13 @@ class Banco:
         with self.con:
             self.con.executemany("UPDATE vagas SET notificada = 1 WHERE id = ?", [(i,) for i in ids])
 
-    def mudar_status(self, id_vaga: str, status: str) -> None:
+    def mudar_status(self, id_vaga: str, status: str) -> bool:
+        """Muda o status da vaga. Devolve False se a vaga não existe no banco."""
         if status not in STATUS:
             raise ValueError(f"Status inválido: {status}. Opções: {', '.join(STATUS)}")
         with self.con:
-            self.con.execute("UPDATE vagas SET status = ? WHERE id = ?", (status, id_vaga))
+            cur = self.con.execute("UPDATE vagas SET status = ? WHERE id = ?", (status, id_vaga))
+        return cur.rowcount > 0
 
     def anotar(self, id_vaga: str, texto: str) -> None:
         with self.con:

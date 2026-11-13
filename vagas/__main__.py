@@ -136,7 +136,10 @@ def cmd_repontuar(args, config: Config) -> int:
 
 def cmd_status(args, config: Config) -> int:
     with Banco(config.banco) as banco:
-        banco.mudar_status(args.id, args.status)
+        achou = banco.mudar_status(args.id, args.status)
+    if not achou:
+        log.error("Vaga %s não está no banco. Rode o 'coletar' com um termo que encontre ela.", args.id)
+        return 1
     log.info("Vaga %s marcada como '%s'", args.id, args.status)
     return 0
 
