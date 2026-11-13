@@ -2,6 +2,10 @@
 
 Sistema em Python que procura vagas de emprego sozinho em vários sites, dá uma nota pra cada vaga de acordo com o seu perfil, guarda tudo num banco de dados e avisa por e-mail ou Telegram quando aparece uma vaga boa. Também tem um painel web pra filtrar as vagas, ver gráficos e acompanhar as suas candidaturas.
 
+![Painel com a lista de vagas e a nota de cada uma](docs/painel.png)
+
+![Aba de gráficos do painel](docs/graficos.png)
+
 ## Funcionalidades
 
 - **Coleta em 3 sites, cada um com uma técnica diferente**
