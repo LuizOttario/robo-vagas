@@ -1,0 +1,8 @@
+selenium>=4.20
+requests>=2.31
+beautifulsoup4>=4.12
+openpyxl>=3.1
+pandas>=2.2
+streamlit>=1.40
+plotly>=5.20
+pytest>=8.0

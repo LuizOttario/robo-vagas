@@ -1,0 +1,57 @@
+# Configuração do Robô de Vagas
+# Copie este arquivo para "config.toml" e ajuste para o seu perfil.
+# O config.toml não vai para o GitHub (está no .gitignore), então pode pôr senhas nele.
+
+[busca]
+# Palavras que o robô pesquisa em cada site
+termos = ["python", "rpa", "automação"]
+
+# Sites usados: gupy, vagas_com, programathor
+fontes = ["gupy", "vagas_com", "programathor"]
+
+# Máximo de vagas por termo em cada site
+max_por_termo = 50
+
+# true = abre o Chrome na tela pra você ver o robô no Vagas.com
+mostrar_navegador = false
+
+[perfil]
+# Cada habilidade encontrada na vaga aumenta a nota
+habilidades = ["python", "selenium", "rpa", "sql", "excel", "pandas", "git", "api", "automação", "power bi"]
+
+# Opções: estagio, trainee, junior, pleno, senior, especialista
+niveis_desejados = ["estagio", "trainee", "junior"]
+niveis_evitar = ["senior", "especialista"]
+
+aceita_remoto = true
+aceita_hibrido = true
+
+# Cidades onde você aceita trabalhar presencial ou híbrido
+cidades = ["São Paulo"]
+
+# Vagas com estas palavras perdem pontos
+palavras_evitar = ["10 anos de experiência", "inglês fluente", "enfermeiro", "enfermagem"]
+
+[alertas]
+# Avisa por e-mail/Telegram quando aparecer vaga nova com nota maior ou igual a esta
+nota_minima = 60
+
+[email]
+ativo = false
+servidor = "smtp.gmail.com"
+porta = 587
+usuario = "seuemail@gmail.com"
+# No Gmail use uma "senha de app": Conta Google > Segurança > Senhas de app
+senha = ""
+destinatario = "seuemail@gmail.com"
+
+[telegram]
+ativo = false
+# Crie um bot falando com o @BotFather no Telegram e cole o token aqui
+token = ""
+# Mande uma mensagem pro seu bot e abra https://api.telegram.org/bot<TOKEN>/getUpdates pra ver o chat_id
+chat_id = ""
+
+[geral]
+banco = "dados/vagas.db"
+pasta_relatorios = "relatorios"

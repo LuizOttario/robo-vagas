@@ -1,0 +1,23 @@
+# docker compose up -d painel     -> painel em http://localhost:8501
+# docker compose run --rm robo    -> roda uma coleta de vagas
+
+services:
+  painel:
+    build: .
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./dados:/app/dados
+      - ./relatorios:/app/relatorios
+      - ./config.toml:/app/config.toml:ro
+    restart: unless-stopped
+
+  robo:
+    build: .
+    command: ["python", "-m", "vagas", "coletar"]
+    shm_size: "1gb"   # o Chromium precisa de memória compartilhada
+    volumes:
+      - ./dados:/app/dados
+      - ./relatorios:/app/relatorios
+      - ./config.toml:/app/config.toml:ro
+    profiles: ["robo"]
