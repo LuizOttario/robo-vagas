@@ -69,6 +69,18 @@ python -m vagas coletar --ver                         # mostra o Chrome trabalha
 ./agendar.sh remover
 ```
 
+### Versão .exe para Windows (sem instalar Python)
+
+O GitHub Actions gera o `RoboVagas.exe` a cada mudança no código: em **Actions > Gerar .exe**, abra a última execução e baixe o arquivo em **Artifacts**.
+
+1. Dê dois cliques no `RoboVagas.exe`. Uma janela preta abre e o painel aparece no navegador (deixe a janela aberta enquanto usa).
+2. Em **Meu currículo**, envie o currículo em PDF. O robô preenche os cargos, as habilidades e a cidade; confira e clique em **Salvar perfil**.
+3. Clique em **Buscar vagas agora**.
+
+O perfil e as vagas ficam em `%APPDATA%\RoboVagas`. No .exe o robô usa Gupy, Sólides e ProgramaThor (o Vagas.com precisa do Chrome instalado).
+
+Para gerar o executável na sua máquina: `pip install pyinstaller && pyinstaller robo-vagas.spec`.
+
 ### Com Docker
 ```bash
 cp config.exemplo.toml config.toml

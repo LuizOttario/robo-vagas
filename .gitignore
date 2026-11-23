@@ -5,3 +5,7 @@ relatorios/
 __pycache__/
 .pytest_cache/
 *.pyc
+
+# executável gerado pelo PyInstaller
+build/
+dist/

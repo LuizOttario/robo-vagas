@@ -1,0 +1,24 @@
+# Gera o RoboVagas.exe no Windows. Baixe em Actions > "Gerar .exe" > Artifacts.
+name: Gerar .exe
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["vagas/**", "painel.py", "iniciar.py", "robo-vagas.spec", "requirements.txt", ".github/workflows/exe.yml"]
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt pyinstaller
+      - run: python -m pytest -q
+      - run: pyinstaller --noconfirm robo-vagas.spec
+      - uses: actions/upload-artifact@v4
+        with:
+          name: RoboVagas-windows
+          path: dist/RoboVagas.exe

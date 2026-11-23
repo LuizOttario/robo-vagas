@@ -7,8 +7,10 @@ Rodar:  python -m vagas painel
 
 from __future__ import annotations
 
-import subprocess
-import sys
+import argparse
+import contextlib
+import io
+import logging
 import tempfile
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -18,8 +20,10 @@ import plotly.express as px
 import streamlit as st
 
 from vagas import relatorio
+from vagas.__main__ import cmd_coletar, cmd_repontuar
 from vagas.banco import Banco
-from vagas.config import PASTA_PROJETO, carregar
+from vagas.config import ARQUIVO_PADRAO, carregar
+from vagas.curriculo import extrair_perfil, ler_pdf, salvar_perfil
 from vagas.modelos import STATUS, normalizar
 
 st.set_page_config(page_title="Robô de Vagas", page_icon=None, layout="wide")
@@ -54,10 +58,29 @@ def salvar_mudancas(originais: pd.DataFrame, editadas: pd.DataFrame) -> int:
     return mudou
 
 
+def rodar(comando, args=None) -> tuple[int, str]:
+    """Roda um comando do robô aqui dentro (no .exe não dá pra chamar outro Python) e devolve o log."""
+    saida = io.StringIO()
+    handler = logging.StreamHandler(saida)
+    log = logging.getLogger("vagas")
+    log.addHandler(handler)
+    log.setLevel(logging.INFO)
+    try:
+        with contextlib.redirect_stdout(saida):
+            codigo = comando(args, carregar())
+    except Exception as erro:  # mostra o erro na tela em vez de derrubar o painel
+        codigo = 1
+        saida.write(f"\nErro: {erro}")
+    finally:
+        log.removeHandler(handler)
+    return codigo, saida.getvalue()
+
+
 # ------------------------------------------------------------------- cabeçalho
 
 st.title("Robô de Vagas")
-st.caption("Vagas coletadas automaticamente do Gupy, Vagas.com, ProgramaThor e Sólides, com nota de acordo com o seu perfil.")
+st.caption("Vagas coletadas automaticamente dos sites de emprego (" + ", ".join(config.fontes)
+           + "), com nota de acordo com o seu perfil.")
 
 df = carregar_vagas()
 
@@ -79,19 +102,55 @@ with st.sidebar:
     st.header("Robô")
     if st.button("Buscar vagas agora", type="primary", width="stretch"):
         with st.spinner("O robô está buscando vagas. Isso leva uns 2 minutos..."):
-            resultado = subprocess.run([sys.executable, "-m", "vagas", "coletar"],
-                                       cwd=PASTA_PROJETO, capture_output=True, text=True)
+            codigo, saida = rodar(cmd_coletar, argparse.Namespace(
+                fontes=None, termos=None, ver=False, sem_alerta=True))
         carregar_vagas.clear()
-        if resultado.returncode == 0:
+        if codigo == 0:
             st.success("Busca concluída.")
         else:
             st.error("A busca teve problemas. Veja o log abaixo.")
         with st.expander("Log da busca"):
-            st.code(resultado.stdout[-4000:] + resultado.stderr[-2000:])
+            st.code(saida[-5000:])
+
+# ------------------------------------------------------------- meu currículo
+
+with st.expander("Meu currículo", expanded=not ARQUIVO_PADRAO.exists()):
+    st.caption("Envie seu currículo em PDF: o robô descobre os cargos, as habilidades e a sua cidade. "
+               "Confira, ajuste e salve. O arquivo não sai do seu computador.")
+    pdf = st.file_uploader("Currículo em PDF", type="pdf")
+    perfil = {"termos": config.termos, "habilidades": config.habilidades,
+              "cidades": config.cidades, "estado": config.estado}
+    if pdf:
+        texto = ler_pdf(pdf.getvalue())
+        if texto.strip():
+            perfil = extrair_perfil(texto)
+        else:
+            st.warning("Não consegui ler o texto desse PDF (parece ser uma foto ou digitalização). "
+                       "Preencha os campos abaixo à mão.")
+
+    with st.form("perfil"):
+        termos = st.text_area("Cargos que você procura (um por linha)", "\n".join(perfil["termos"]))
+        habilidades = st.text_area("Suas habilidades (uma por linha)", "\n".join(perfil["habilidades"]), height=180)
+        c_cid, c_uf = st.columns([3, 1])
+        cidades = c_cid.text_input("Cidades onde aceita trabalhar (separe por vírgula)", ", ".join(perfil["cidades"]))
+        estado = c_uf.text_input("Estado (sigla)", perfil["estado"], max_chars=2)
+        niveis = st.multiselect("Níveis que te interessam", ["estagio", "trainee", "junior", "pleno", "senior"],
+                                default=[n for n in config.niveis_desejados
+                                         if n in ("estagio", "trainee", "junior", "pleno", "senior")])
+        if st.form_submit_button("Salvar perfil", type="primary"):
+            linhas = lambda t: [x.strip() for x in t.splitlines() if x.strip()]  # noqa: E731
+            if not linhas(termos):
+                st.error("Coloque pelo menos um cargo pra o robô saber o que procurar.")
+            else:
+                salvar_perfil({"termos": linhas(termos), "habilidades": linhas(habilidades),
+                               "cidades": [c.strip() for c in cidades.split(",") if c.strip()],
+                               "estado": estado.strip().upper(), "niveis_desejados": niveis}, ARQUIVO_PADRAO)
+                rodar(cmd_repontuar)  # notas das vagas que já estão no banco seguem o perfil novo
+                carregar_vagas.clear()
+                st.success("Perfil salvo. Agora clique em **Buscar vagas agora** na barra lateral.")
 
 if df.empty:
-    st.info("Ainda não há vagas. Clique em **Buscar vagas agora** na barra lateral "
-            "ou rode `python -m vagas coletar` no terminal.")
+    st.info("Ainda não há vagas. Salve seu perfil acima e clique em **Buscar vagas agora** na barra lateral.")
     st.stop()
 
 # ---------------------------------------------------------------- filtragem

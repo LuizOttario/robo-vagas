@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+import os
 import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
 
 PASTA_PROJETO = Path(__file__).resolve().parent.parent
-ARQUIVO_PADRAO = PASTA_PROJETO / "config.toml"
+# Onde ficam o config.toml e o banco. O .exe aponta isso pra uma pasta do usuário.
+PASTA_DADOS = Path(os.environ.get("ROBO_VAGAS_PASTA") or PASTA_PROJETO)
+ARQUIVO_PADRAO = PASTA_DADOS / "config.toml"
 ARQUIVO_EXEMPLO = PASTA_PROJETO / "config.exemplo.toml"
 
 
@@ -37,8 +40,8 @@ class Config:
     telegram: dict = field(default_factory=dict)
 
     # [geral]
-    banco: Path = PASTA_PROJETO / "dados" / "vagas.db"
-    pasta_relatorios: Path = PASTA_PROJETO / "relatorios"
+    banco: Path = PASTA_DADOS / "dados" / "vagas.db"
+    pasta_relatorios: Path = PASTA_DADOS / "relatorios"
 
 
 def carregar(caminho: Path | None = None) -> Config:
@@ -57,7 +60,7 @@ def carregar(caminho: Path | None = None) -> Config:
         if not valor:
             return padrao_
         p = Path(valor)
-        return p if p.is_absolute() else PASTA_PROJETO / p
+        return p if p.is_absolute() else PASTA_DADOS / p
 
     return Config(
         termos=busca.get("termos", padrao.termos),
